@@ -367,23 +367,33 @@ MOOD_PLAYLISTS = {
     "angry": "37i9dQZF1DX2DCrI7t4mmy"
 }
 
+
+
 def recommend_music(mood: str) -> str:
+    """
+    Recommends a Spotify playlist based on the detected mood.
+
+    Args:
+        mood (str): Detected mood.
+
+    Returns:
+        str: URL to the recommended playlist.
+    """
     if not sp:
         return "Spotify integration not available."
 
     playlist_id = MOOD_PLAYLISTS.get(mood, MOOD_PLAYLISTS["neutral"])
     
     try:
-        # First try with just the ID
-        try:
-            playlist = sp.playlist(playlist_id)
-            return f"Based on your mood, listen to: {playlist['name']} - {playlist['external_urls']['spotify']}"
-        except:
-            # If that fails, try with the full URI
-            playlist = sp.playlist(f"spotify:playlist:{playlist_id}")
-            return f"Based on your mood, listen to: {playlist['name']} - {playlist['external_urls']['spotify']}"
+        playlist = sp.playlist(playlist_id, market="US")  # Added market parameter
+        return f"Based on your mood, listen to: [{playlist['name']}]({playlist['external_urls']['spotify']}) 🎶"
+    
+    except spotipy.exceptions.SpotifyException as e:
+        # If the API request fails, return the direct playlist link instead
+        return f"Couldn't fetch playlist details, but you can still listen here: [Spotify Playlist](https://open.spotify.com/playlist/{playlist_id})"
+    
     except Exception as e:
-        return f"Error fetching playlist: {str(e)}. Tried with ID: {playlist_id}"
+        return f"Unexpected error: {str(e)}"
 
 
 # --- Mood Detection Based on Chat History ---
@@ -429,7 +439,7 @@ config = GenerateContentConfig(
 )
 
 # --- Streamlit Chat UI ---
-st.title("💡 AI Assistant with Device Controls & Mood-Based Music")
+st.title("💡 AGI for everything")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []

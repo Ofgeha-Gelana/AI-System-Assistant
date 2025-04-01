@@ -1,28 +1,23 @@
+import time
+import spotipy
+from spotipy.oauth2 import SpotifyOAuth
 
+SPOTIFY_CLIENT_ID = "2d960f832ebd4b92aa2052637c52217d"
+SPOTIFY_CLIENT_SECRET = "c3b86a96a47143bd829e39ed9f98beb2"
+SPOTIFY_REDIRECT_URI = "http://localhost:8080"
 
+auth_manager = SpotifyOAuth(
+    client_id=SPOTIFY_CLIENT_ID,
+    client_secret=SPOTIFY_CLIENT_SECRET,
+    redirect_uri=SPOTIFY_REDIRECT_URI,
+    scope="playlist-read-private"
+)
 
-import requests
+sp = spotipy.Spotify(auth_manager=auth_manager)
 
-def send_whatsapp_message(phone_number, message):
-    ACCESS_TOKEN = "ytzsehRrGwMjBqP1W2DsrZ7VCojtIZUzyCoR6Wb67dcee8fe"  # Replace with your WhatsApp Cloud API token
-    PHONE_NUMBER_ID = "+251935070773"  # Replace with your Phone Number ID
-    API_URL = f"https://graph.facebook.com/v18.0/{PHONE_NUMBER_ID}/messages"
-
-    headers = {
-        "Authorization": f"Bearer {ACCESS_TOKEN}",
-        "Content-Type": "application/json"
-    }
-
-    payload = {
-        "messaging_product": "whatsapp",
-        "to": phone_number,
-        "type": "testing",
-        "text": {"body": message}
-    }
-
-    response = requests.post(API_URL, json=payload, headers=headers)
-    return response.json()
-
-# Example Usage:
-response = send_whatsapp_message("1234567890", "Hello from WhatsApp API!")
-print(response)
+# Check token expiry
+token_info = auth_manager.get_cached_token()
+if token_info:
+    expires_at = token_info['expires_at']
+    time_left = expires_at - time.time()
+    print(f"Token expires in {int(time_left)} seconds.")
