@@ -246,7 +246,7 @@
 # try:
 #     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
 #         client_id=SPOTIFY_CLIENT_ID,
-#         client_secret=SPOTIFY_CLIENT_SECRET,
+#         client_secret=    SPOTIFY_CLIENT_SECRET,
 #         redirect_uri=SPOTIFY_REDIRECT_URI,
 #         scope="playlist-read-private"
 #     ))
