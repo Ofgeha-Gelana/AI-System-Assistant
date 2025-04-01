@@ -1,718 +1,467 @@
-# import streamlit as st
 # import os
-# import random
-# import requests
-# from datetime import datetime
-# from gtts import gTTS
-# from io import BytesIO
-# import speech_recognition as sr
-# import google.generativeai as genai
-
-# # --- App Config ---
-# st.set_page_config(
-#     page_title="Joke Master 3000 (Gemini)",
-#     page_icon="🤖",
-#     layout="wide"
-# )
-
-# # --- Session State ---
-# if 'joke_history' not in st.session_state:
-#     st.session_state.joke_history = []
-
-# # --- Gemini Setup ---
-# # genai.configure(api_key=st.secrets.get("GEMINI_API_KEY", os.getenv("GEMINI_API_KEY")))
-# # model = genai.GenerativeModel('gemini-1.5-flash')
-
-# #
-# api_key = os.getenv("GEMINI_API_KEY")
-# client = genai.Client(api_key=api_key)
- 
-# # Define the model you are going to use
-# model =  "gemini-2.0-flash"
-
-# # --- Audio Functions ---
-# def text_to_speech(text):
-#     """Convert text to speech and play it"""
-#     tts = gTTS(text=text, lang='en')
-#     audio_bytes = BytesIO()
-#     tts.write_to_fp(audio_bytes)
-#     return audio_bytes
-
-# def recognize_speech():
-#     """Listen to user voice input"""
-#     r = sr.Recognizer()
-#     with sr.Microphone() as source:
-#         st.info("Speak now...")
-#         audio = r.listen(source)
-#         try:
-#             text = r.recognize_google(audio)
-#             return text
-#         except Exception as e:
-#             st.error(f"Couldn't understand: {e}")
-#             return None
-
-# # --- Joke Functions ---
-# def get_dad_joke():
-#     """Fetch a random dad joke"""
-#     response = requests.get(
-#         "https://icanhazdadjoke.com/",
-#         headers={"Accept": "text/plain"}
-#     )
-#     return response.text if response.status_code == 200 else "Why did the joke fail? It didn't GET a response!"
-
-# def roast_me():
-#     """Generate a hilarious roast using Gemini"""
-#     response = model.generate_content(
-#         "Generate a short, funny roast about someone who asked to be roasted. "
-#         "Keep it PG-13 and clever. Maximum 2 sentences."
-#     )
-#     return response.text
-
-# def ai_improv_joke(topic):
-#     """Generate an AI-powered joke about any topic"""
-#     response = model.generate_content(
-#         f"Create a very short, funny joke about {topic}. "
-#         "Maximum 2 sentences. Be creative!"
-#     )
-#     return response.text
-
-# def joke_battle(user_joke):
-#     """Battle the AI with jokes"""
-#     bot_joke = ai_improv_joke("programming")
-#     st.session_state.joke_history.append(f"👨‍💻 You: {user_joke}")
-#     st.session_state.joke_history.append(f"🤖 Bot: {bot_joke}")
-    
-#     # Let Gemini judge who won!
-#     judge_prompt = f"""
-#     User's joke: "{user_joke}"
-#     AI's joke: "{bot_joke}"
-    
-#     Which joke is funnier? Respond ONLY with either "USER" or "AI" 
-#     and a very short (3-5 word) reason why.
-#     """
-    
-#     judge_response = model.generate_content(judge_prompt)
-#     decision = judge_response.text.split("\n")[0]
-#     st.session_state.joke_history.append(f"🏆 {decision}")
-#     return decision
-
-# # --- UI Components ---
-# def render_joke_history():
-#     """Display joke history in an expandable section"""
-#     with st.expander("📜 Joke History", expanded=False):
-#         for joke in st.session_state.joke_history[-5:][::-1]:  # Show last 5, newest first
-#             st.write(joke)
-
-# def voice_input_button():
-#     """Button to trigger voice input"""
-#     if st.button("🎤 Use Voice Input"):
-#         user_input = recognize_speech()
-#         if user_input:
-#             st.session_state.voice_input = user_input
-#             return user_input
-#     return ""
-
-# # --- Main App ---
-# def main():
-#     st.title("🎤 Joke Master 3000 (Gemini)")
-#     st.markdown("### The AI-Powered Comedy Experience 🤖😂")
-
-#     # Sidebar for settings
-#     with st.sidebar:
-#         st.header("Settings")
-#         auto_tts = st.checkbox("🔊 Auto Text-to-Speech", True)
-#         st.markdown("---")
-#         st.markdown("### Try these commands:")
-#         st.code('"Tell me a dad joke"')
-#         st.code('"Roast me!"')
-#         st.code('"Make a joke about cats"')
-#         st.code('"Let\'s battle with jokes"')
-
-#     # Main content area
-#     col1, col2 = st.columns([3, 1])
-
-#     with col1:
-#         # Input methods
-#         user_input = st.text_input(
-#             "How can I make you laugh today?",
-#             value=st.session_state.get("voice_input", ""),
-#             placeholder="Try: 'Tell me a joke about dogs' or 'Roast me!'"
-#         )
-        
-#         # Add voice input option
-#         voice_text = voice_input_button()
-#         if voice_text:
-#             user_input = voice_text
-
-#         # Action buttons
-#         col1, col2, col3, col4 = st.columns(4)
-#         with col1:
-#             if st.button("🤣 Random Joke"):
-#                 user_input = "Tell me a random joke"
-#         with col2:
-#             if st.button("🔥 Roast Me"):
-#                 user_input = "Roast me!"
-#         with col3:
-#             if st.button("🤺 Joke Battle"):
-#                 user_input = "Let's battle with jokes"
-#         with col4:
-#             if st.button("🧔 Dad Joke"):
-#                 user_input = "Tell me a dad joke"
-
-#         # Process input
-#         if user_input:
-#             if "roast" in user_input.lower():
-#                 joke = roast_me()
-#                 st.error(joke)  # Roasts appear in red for effect
-#             elif "battle" in user_input.lower():
-#                 battle_input = st.text_input("Tell your joke first:")
-#                 if battle_input:
-#                     result = joke_battle(battle_input)
-#                     st.success(result)
-#             elif "dad joke" in user_input.lower():
-#                 joke = get_dad_joke()
-#                 st.success(joke)
-#             elif "joke about" in user_input.lower():
-#                 topic = user_input.split("about")[-1].strip()
-#                 joke = ai_improv_joke(topic)
-#                 st.success(joke)
-#             else:
-#                 # Let Gemini handle generic requests
-#                 response = model.generate_content(
-#                     f"User asked: '{user_input}'. Respond with a funny joke or humorous response."
-#                 )
-#                 joke = response.text
-#                 st.success(joke)
-
-#             # Add to history and play audio
-#             st.session_state.joke_history.append(joke)
-#             if auto_tts:
-#                 audio_bytes = text_to_speech(joke)
-#                 st.audio(audio_bytes, format='audio/mp3')
-
-#     with col2:
-#         st.image("https://i.imgur.com/V7yzU1r.png", width=150)  # Robot comedian image
-#         st.markdown("### My Comedy Styles")
-#         st.button("🤖 Tech Jokes")
-#         st.button("🐶 Animal Jokes")
-#         st.button("🍔 Food Jokes")
-#         st.button("🎭 Dark Humor")
-
-#     # Display joke history
-#     render_joke_history()
-
-#     # Easter egg
-#     if st.session_state.get("joke_history") and len(st.session_state.joke_history) % 5 == 0:
-#         st.balloons()
-
-# if __name__ == "__main__":
-#     main()
-
-
-
-
 # import streamlit as st
-# import os
-# import random
-# import requests
-# from datetime import datetime
-# from gtts import gTTS
-# from io import BytesIO
-# import speech_recognition as sr
-# import google.generativeai as genai
+# import subprocess
+# from dotenv import load_dotenv
+# import spotipy
+# from spotipy.oauth2 import SpotifyOAuth
+# from textblob import TextBlob
+# from google.genai.types import GenerateContentConfig
+# from google import genai
 
-# # --- App Config ---
-# st.set_page_config(
-#     page_title="Joke Master 3000 (Gemini)",
-#     page_icon="🤖",
-#     layout="wide"
-# )
+# # Load environment variables
+# load_dotenv()
 
-# # --- Session State ---
-# if 'joke_history' not in st.session_state:
-#     st.session_state.joke_history = []
+# # API Keys & Config
+# GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+# SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
+# SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
+# SPOTIFY_REDIRECT_URI = "http://localhost:8080"
 
-# # --- Gemini Setup ---
-# genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-# model = genai.GenerativeModel("gemini-1.5-flash")
-
-# # --- Audio Functions ---
-# def text_to_speech(text):
-#     """Convert text to speech and play it"""
-#     tts = gTTS(text=text, lang='en')
-#     audio_bytes = BytesIO()
-#     tts.write_to_fp(audio_bytes)
-#     return audio_bytes
-
-# def recognize_speech():
-#     """Listen to user voice input"""
-#     r = sr.Recognizer()
-#     with sr.Microphone() as source:
-#         st.info("Speak now...")
-#         audio = r.listen(source)
-#         try:
-#             text = r.recognize_google(audio)
-#             return text
-#         except Exception as e:
-#             st.error(f"Couldn't understand: {e}")
-#             return None
-
-# # --- Joke Functions ---
-# def get_dad_joke():
-#     """Fetch a random dad joke"""
-#     response = requests.get(
-#         "https://icanhazdadjoke.com/",
-#         headers={"Accept": "text/plain"}
-#     )
-#     return response.text if response.status_code == 200 else "Why did the joke fail? It didn't GET a response!"
-
-# def roast_me():
-#     """Generate a hilarious roast using Gemini"""
-#     response = model.generate_content("Generate a short, funny roast. Keep it PG-13 and clever.")
-#     return response.text
-
-# def ai_improv_joke(topic):
-#     """Generate an AI-powered joke about any topic"""
-#     response = model.generate_content(f"Create a short, funny joke about {topic}.")
-#     return response.text
-
-# def joke_battle(user_joke):
-#     """Battle the AI with jokes"""
-#     bot_joke = ai_improv_joke("programming")
-#     st.session_state.joke_history.append(f"👨‍💻 You: {user_joke}")
-#     st.session_state.joke_history.append(f"🤖 Bot: {bot_joke}")
-    
-#     judge_prompt = f"""
-#     User's joke: "{user_joke}"
-#     AI's joke: "{bot_joke}"
-#     Which joke is funnier? Respond with "USER" or "AI" and a short reason.
-#     """
-    
-#     judge_response = model.generate_content(judge_prompt)
-#     decision = judge_response.text.split("\n")[0]
-#     st.session_state.joke_history.append(f"🏆 {decision}")
-#     return decision
-
-# # --- UI Components ---
-# def render_joke_history():
-#     """Display joke history"""
-#     with st.expander("📜 Joke History", expanded=False):
-#         for joke in st.session_state.joke_history[-5:][::-1]:
-#             st.write(joke)
-
-# def voice_input_button():
-#     """Button to trigger voice input"""
-#     if st.button("🎤 Use Voice Input"):
-#         user_input = recognize_speech()
-#         if user_input:
-#             st.session_state.voice_input = user_input
-#             return user_input
-#     return ""
-
-# # --- Main App ---
-# def main():
-#     st.title("🎤 Joke Master 3000 (Gemini)")
-#     st.markdown("### The AI-Powered Comedy Experience 🤖😂")
-
-#     # Sidebar settings
-#     with st.sidebar:
-#         st.header("Settings")
-#         auto_tts = st.checkbox("🎧 Auto Text-to-Speech", True)
-#         st.markdown("---")
-#         st.markdown("### Try these commands:")
-#         st.code('"Tell me a dad joke"')
-#         st.code('"Roast me!"')
-#         st.code('"Make a joke about cats"')
-#         st.code('"Let\'s battle with jokes"')
-
-#     # Input area
-#     user_input = st.text_input(
-#         "How can I make you laugh today?",
-#         value=st.session_state.get("voice_input", ""),
-#         placeholder="Try: 'Tell me a joke about dogs' or 'Roast me!'"
-#     )
-    
-#     # Voice input option
-#     voice_text = voice_input_button()
-#     if voice_text:
-#         user_input = voice_text
-
-#     # Buttons for quick actions
-#     col1, col2, col3, col4 = st.columns(4)
-#     with col1:
-#         if st.button("🤣 Random Joke"):
-#             user_input = "Tell me a random joke"
-#     with col2:
-#         if st.button("🔥 Roast Me"):
-#             user_input = "Roast me!"
-#     with col3:
-#         if st.button("🫃 Joke Battle"):
-#             user_input = "Let's battle with jokes"
-#     with col4:
-#         if st.button("🧔 Dad Joke"):
-#             user_input = "Tell me a dad joke"
-
-#     # Process user input
-#     if user_input:
-#         if "roast" in user_input.lower():
-#             joke = roast_me()
-#             st.error(joke)
-#         elif "battle" in user_input.lower():
-#             battle_input = st.text_input("Tell your joke first:")
-#             if battle_input:
-#                 result = joke_battle(battle_input)
-#                 st.success(result)
-#         elif "dad joke" in user_input.lower():
-#             joke = get_dad_joke()
-#             st.success(joke)
-#         elif "joke about" in user_input.lower():
-#             topic = user_input.split("about")[-1].strip()
-#             joke = ai_improv_joke(topic)
-#             st.success(joke)
-#         else:
-#             response = model.generate_content(f"User asked: '{user_input}'. Respond with a joke.")
-#             joke = response.text
-#             st.success(joke)
-
-#         st.session_state.joke_history.append(joke)
-#         if auto_tts:
-#             audio_bytes = text_to_speech(joke)
-#             st.audio(audio_bytes, format='audio/mp3')
-
-#     render_joke_history()
-#     if len(st.session_state.joke_history) % 5 == 0:
-#         st.balloons()
-
-# if __name__ == "__main__":
-#     main()
-
-
-
-
-
-# import streamlit as st
-# import os
-# import random
-# import requests
-# from datetime import datetime
-# from gtts import gTTS
-# from io import BytesIO
-# import speech_recognition as sr
-# import google.generativeai as genai
-# from google.generativeai.types import GenerateContentConfig
-
-# # --- App Config ---
-# st.set_page_config(
-#     page_title="Joke Master 3000 (Gemini FC)",
-#     page_icon="🤖",
-#     layout="wide"
-# )
-
-# # --- Session State ---
-# if 'joke_history' not in st.session_state:
-#     st.session_state.joke_history = []
-
-# # --- Gemini Setup with Function Calling ---
-# genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-
-# # Define our tools (functions Gemini can call)
-# def get_dad_joke(category: str = "Any") -> str:
-#     """Fetches a random dad joke from icanhazdadjoke.com"""
-#     response = requests.get(
-#         "https://icanhazdadjoke.com/",
-#         headers={"Accept": "text/plain"}
-#     )
-#     return response.text if response.status_code == 200 else "Why did the joke fail? It didn't GET a response!"
-
-# def roast_me(intensity: str = "medium") -> str:
-#     """Generates a funny roast at specified intensity level (mild, medium, spicy)"""
-#     roasts = {
-#         "mild": [
-#             "You're like a cloud—when you disappear, it's a beautiful day.",
-#             "If laughter is the best medicine, your face must be curing the world."
-#         ],
-#         "medium": [
-#             "You're the human version of a '404 Error'.",
-#             "I'd agree with you, but then we'd both be wrong."
-#         ],
-#         "spicy": [
-#             "You're not stupid; you just have bad luck thinking.",
-#             "You're the reason the gene pool needs a lifeguard."
-#         ]
-#     }
-#     return random.choice(roasts.get(intensity, roasts["medium"]))
-
-# def save_joke(joke: str, filename: str = "joke.txt") -> None:
-#     """Saves a joke to a text file with timestamp"""
-#     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-#     with open(filename, "a") as file:
-#         file.write(f"[{timestamp}]\n{joke}\n\n")
-#     return f"Joke saved to {filename}"
-
-# def tell_joke(filename: str = "joke.txt") -> str:
-#     """Reads the joke aloud using text-to-speech"""
+# # --- Initialize Spotify Client ---
+# def initialize_spotify():
 #     try:
-#         with open(filename, "r") as file:
-#             joke = file.read()
-        
-#         tts = gTTS(text=joke, lang='en')
-#         audio_bytes = BytesIO()
-#         tts.write_to_fp(audio_bytes)
-#         return "Joke read aloud successfully!"
-#     except FileNotFoundError:
-#         return "Couldn't find the joke file."
+#         return spotipy.Spotify(auth_manager=SpotifyOAuth(
+#             client_id=SPOTIFY_CLIENT_ID,
+#             client_secret=SPOTIFY_CLIENT_SECRET,
+#             redirect_uri=SPOTIFY_REDIRECT_URI,
+#             scope="playlist-read-private"
+#         ))
+#     except Exception as e:
+#         st.error(f"Spotify authentication failed: {e}")
+#         return None
 
-# def joke_battle(user_joke: str) -> str:
-#     """Evaluates a joke battle between user and AI"""
-#     bot_joke = get_dad_joke()
-#     result = f"🤖 Bot's joke: {bot_joke}\n\n"
+# sp = initialize_spotify()
+
+# # --- Mood Detection ---
+# def detect_mood(text: str) -> str:
+#     analysis = TextBlob(text)
+#     polarity = analysis.sentiment.polarity
+#     text_lower = text.lower()
+
+#     if "angry" in text_lower or "mad" in text_lower:
+#         return "angry"
+#     elif "happy" in text_lower or "joy" in text_lower or "excited" in text_lower:
+#         return "happy"
+#     elif "sad" in text_lower or "depressed" in text_lower:
+#         return "sad"
+#     elif "stressed" in text_lower or "anxious" in text_lower:
+#         return "stressed"
     
-#     # Simple length-based scoring
-#     if len(user_joke) > len(bot_joke):
-#         result += "🏆 You win! Your joke was longer (and therefore funnier?)"
-#     else:
-#         result += "🏆 Bot wins! Its joke was longer (and therefore funnier?)"
-    
-#     return result
+#     return "happy" if polarity > 0.3 else "sad" if polarity < -0.3 else "neutral"
 
-# # Configure Gemini with our functions
-# tools = [get_dad_joke, roast_me, save_joke, tell_joke, joke_battle]
+# # --- Spotify Music Recommendation ---
+# MOOD_PLAYLISTS = {
+#     "happy": "https://open.spotify.com/playlist/37i9dQZF1DXdPec7aLTmlC",
+#     "sad": "https://open.spotify.com/playlist/37i9dQZF1DX64Y3ftTBfaN",
+#     "stressed": "https://open.spotify.com/playlist/37i9dQZF1DWU0ScTcjJBdj",
+#     "neutral": "https://open.spotify.com/playlist/37i9dQZF1DX0XUsuxWHRQd",
+#     "angry": "https://open.spotify.com/playlist/37i9dQZF1DX2DCrI7t4mmy"
+# }
 
+# def recommend_music(mood: str) -> str:
+#     return MOOD_PLAYLISTS.get(mood, MOOD_PLAYLISTS["neutral"])
+
+# # --- Integrating Gemini AI ---
+# client = genai.Client(api_key=GEMINI_API_KEY)
+# model_id = "gemini-2.0-flash"
 # config = GenerateContentConfig(
-#     system_instruction="You are Jokey, a hilarious AI comedian. Use the provided tools to deliver jokes, roasts, and comedy battles. Be playful and fun!",
-#     tools=tools
+#     system_instruction="You are a helpful assistant that detects mood and recommends music.",
+#     tools=[detect_mood, recommend_music],
 # )
 
-# model = genai.GenerativeModel('gemini-1.5-flash', generation_config=config)
+# # --- Streamlit Chat UI ---
+# st.title("🎵 Mood-Based Music Recommender")
 
-# # --- UI Components ---
-# def render_joke_history():
-#     """Displays joke history"""
-#     with st.expander("📜 Joke History", expanded=False):
-#         for joke in st.session_state.joke_history[-5:][::-1]:
-#             st.write(joke)
+# if "messages" not in st.session_state:
+#     st.session_state.messages = []
 
-# def voice_input_button():
-#     """Button for voice input"""
-#     if st.button("🎤 Use Voice Input"):
-#         r = sr.Recognizer()
-#         with sr.Microphone() as source:
-#             st.info("Speak now...")
-#             audio = r.listen(source)
-#             try:
-#                 text = r.recognize_google(audio)
-#                 st.session_state.voice_input = text
-#                 return text
-#             except Exception as e:
-#                 st.error(f"Couldn't understand: {e}")
-#                 return None
-#     return ""
+# for message in st.session_state.messages:
+#     with st.chat_message(message["role"]):
+#         st.markdown(message["content"])
 
-# # --- Main App ---
-# def main():
-#     st.title("🎤 Joke Master 3000 (Gemini FC)")
-#     st.markdown("### The Function-Calling Comedy Experience 🤖😂")
+# user_input = st.chat_input("How are you feeling today?")
 
-#     # Sidebar settings
-#     with st.sidebar:
-#         st.header("Settings")
-#         auto_tts = st.checkbox("🔊 Auto Text-to-Speech", True)
-#         st.markdown("---")
-#         st.markdown("### Try these commands:")
-#         st.code('"Tell me a dad joke"')
-#         st.code('"Roast me with medium intensity"')
-#         st.code('"Save a joke about cats"')
-#         st.code('"Let\'s battle with jokes"')
+# if user_input:
+#     st.session_state.messages.append({"role": "user", "content": user_input})
+#     with st.chat_message("user"):
+#         st.markdown(user_input)
 
-#     # Main content
-#     col1, col2 = st.columns([3, 1])
+#     detected_mood = detect_mood(user_input)
+#     playlist_link = recommend_music(detected_mood)
+#     ai_response = f"I sense you're feeling **{detected_mood}**. Here's a playlist for you: [Listen on Spotify]({playlist_link}) 🎶"
 
-#     with col1:
-#         # Input methods
-#         user_input = st.text_input(
-#             "How can I make you laugh today?",
-#             value=st.session_state.get("voice_input", ""),
-#             placeholder="Try: 'Tell me a joke and save it' or 'Roast me hard!'"
-#         )
-        
-#         # Voice input
-#         voice_text = voice_input_button()
-#         if voice_text:
-#             user_input = voice_text
-
-#         # Quick action buttons
-#         col1, col2, col3, col4 = st.columns(4)
-#         with col1:
-#             if st.button("🤣 Random Joke"):
-#                 user_input = "Tell me a random joke"
-#         with col2:
-#             if st.button("🔥 Roast Me"):
-#                 user_input = "Roast me with medium intensity"
-#         with col3:
-#             if st.button("🤺 Joke Battle"):
-#                 user_input = "Let's battle with jokes"
-#         with col4:
-#             if st.button("💾 Save Joke"):
-#                 user_input = "Tell me a joke and save it to jokes.txt"
-
-#         # Process input through Gemini with function calling
-#         if user_input:
-#             response = model.generate_content(user_input)
-            
-#             # Handle function calls if any
-#             if response.candidates and response.candidates[0].content.parts:
-#                 result = response.text
-                
-#                 # If Gemini called a function, execute it
-#                 if hasattr(response.candidates[0].content, 'function_call'):
-#                     func_name = response.candidates[0].content.function_call.name
-#                     args = response.candidates[0].content.function_call.args
-                    
-#                     # Map function names to our actual functions
-#                     func_map = {
-#                         "get_dad_joke": get_dad_joke,
-#                         "roast_me": roast_me,
-#                         "save_joke": save_joke,
-#                         "tell_joke": tell_joke,
-#                         "joke_battle": joke_battle
-#                     }
-                    
-#                     if func_name in func_map:
-#                         try:
-#                             # Call the function with provided arguments
-#                             func_result = func_map[func_name](**args)
-#                             result = f"{result}\n\n{func_result}"
-#                         except Exception as e:
-#                             result = f"Error executing function: {str(e)}"
-                
-#                 st.session_state.joke_history.append(result)
-#                 st.success(result)
-                
-#                 # Auto text-to-speech
-#                 if auto_tts:
-#                     tts = gTTS(text=result, lang='en')
-#                     audio_bytes = BytesIO()
-#                     tts.write_to_fp(audio_bytes)
-#                     st.audio(audio_bytes, format='audio/mp3')
-
-#     with col2:
-#         st.image("https://i.imgur.com/V7yzU1r.png", width=150)
-#         st.markdown("### Comedy Tools")
-#         st.button("🤖 Tech Jokes")
-#         st.button("🐶 Animal Jokes")
-#         st.button("🍔 Food Jokes")
-#         st.button("🎭 Dark Humor")
-
-#     # Display history
-#     render_joke_history()
-
-#     # Easter egg
-#     if len(st.session_state.joke_history) % 5 == 0 and len(st.session_state.joke_history) > 0:
-#         st.balloons()
-
-# if __name__ == "__main__":
-#     main()
+#     st.session_state.messages.append({"role": "assistant", "content": ai_response})
+#     with st.chat_message("assistant"):
+#         st.markdown(ai_response)
 
 
 
 
-import streamlit as st
+
+
+
+
+
+
+
+
+
+
+
+
+# import os
+# import streamlit as st
+# import subprocess
+# from dotenv import load_dotenv
+# import spotipy
+# from spotipy.oauth2 import SpotifyOAuth
+# from textblob import TextBlob
+# from google.genai.types import GenerateContentConfig
+# from google import genai
+
+# # Load environment variables
+# load_dotenv()
+
+# # API Keys & Config
+# GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+# SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
+# SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
+# SPOTIFY_REDIRECT_URI = "http://localhost:8080"
+
+# # --- Initialize Spotify Client ---
+# def initialize_spotify():
+#     try:
+#         return spotipy.Spotify(auth_manager=SpotifyOAuth(
+#             client_id=SPOTIFY_CLIENT_ID,
+#             client_secret=SPOTIFY_CLIENT_SECRET,
+#             redirect_uri=SPOTIFY_REDIRECT_URI,
+#             scope="playlist-read-private"
+#         ))
+#     except Exception as e:
+#         st.error(f"Spotify authentication failed: {e}")
+#         return None
+
+# sp = initialize_spotify()
+
+# # --- Mood Detection ---
+# def detect_mood(text: str) -> str:
+#     """
+#     Detects the mood based on the input text.
+
+#     Args:
+#         text (str): Input text from the user.
+
+#     Returns:
+#         str: Detected mood ('happy', 'sad', 'stressed', 'neutral', 'angry').
+#     """
+#     if not text:  # Check if text is None or empty
+#         return "neutral"
+
+#     analysis = TextBlob(text)
+#     polarity = analysis.sentiment.polarity
+#     text_lower = text.lower()
+
+#     if "angry" in text_lower or "mad" in text_lower:
+#         return "angry"
+#     elif "happy" in text_lower or "joy" in text_lower or "excited" in text_lower:
+#         return "happy"
+#     elif "sad" in text_lower or "depressed" in text_lower:
+#         return "sad"
+#     elif "stressed" in text_lower or "anxious" in text_lower:
+#         return "stressed"
+    
+#     return "happy" if polarity > 0.3 else "sad" if polarity < -0.3 else "neutral"
+
+# # --- Spotify Music Recommendation ---
+# MOOD_PLAYLISTS = {
+#     "happy": "https://open.spotify.com/playlist/37i9dQZF1DXdPec7aLTmlC",
+#     "sad": "https://open.spotify.com/playlist/37i9dQZF1DX64Y3ftTBfaN",
+#     "stressed": "https://open.spotify.com/playlist/37i9dQZF1DWU0ScTcjJBdj",
+#     "neutral": "https://open.spotify.com/playlist/37i9dQZF1DX0XUsuxWHRQd",
+#     "angry": "https://open.spotify.com/playlist/37i9dQZF1DX2DCrI7t4mmy"
+# }
+
+# def recommend_music(mood: str) -> str:
+#     """
+#     Recommends a Spotify playlist based on the detected mood.
+
+#     Args:
+#         mood (str): Detected mood.
+
+#     Returns:
+#         str: URL to the recommended playlist.
+#     """
+#     return MOOD_PLAYLISTS.get(mood, MOOD_PLAYLISTS["neutral"])
+
+# # --- Integrating Gemini AI ---
+# client = genai.Client(api_key=GEMINI_API_KEY)
+# model_id = "gemini-2.0-flash"
+
+# # Generation Config
+# config = GenerateContentConfig(
+#     system_instruction="You are a helpful assistant that detects mood and recommends music when specifically asked.",
+#     tools=[detect_mood, recommend_music],  # Define callable functions
+# )
+
+# # --- Streamlit Chat UI ---
+# st.title("🎵 Mood-Based Music Recommender")
+
+# if "messages" not in st.session_state:
+#     st.session_state.messages = []
+#     st.session_state.detected_mood = "neutral"  # Store the detected mood
+
+# # Display chat messages
+# for message in st.session_state.messages:
+#     with st.chat_message(message["role"]):
+#         st.markdown(message["content"])
+
+# user_input = st.chat_input("How are you feeling today?")
+
+# if user_input:
+#     # Add user input to chat history
+#     st.session_state.messages.append({"role": "user", "content": user_input})
+#     with st.chat_message("user"):
+#         st.markdown(user_input)
+
+#     # Detect mood based on user input
+#     detected_mood = detect_mood(user_input)
+#     st.session_state.detected_mood = detected_mood  # Store the detected mood
+
+#     # Respond to the user with mood detection
+#     ai_response = f"I sense you're feeling **{detected_mood}**. How can I assist you today?"
+    
+#     st.session_state.messages.append({"role": "assistant", "content": ai_response})
+#     with st.chat_message("assistant"):
+#         st.markdown(ai_response)
+
+# # User asks for music
+# if user_input and "music" in user_input.lower():
+#     # Provide the playlist link based on the stored detected mood
+#     playlist_link = recommend_music(st.session_state.detected_mood)
+#     music_response = f"I recommend this playlist for your mood: [Listen on Spotify]({playlist_link}) 🎶"
+    
+#     st.session_state.messages.append({"role": "assistant", "content": music_response})
+#     with st.chat_message("assistant"):
+#         st.markdown(music_response)
+
+
+
+
 import os
-import requests
-import pyttsx3
-import speech_recognition as sr
-import google.generativeai as genai
+import streamlit as st
+import subprocess
+from dotenv import load_dotenv
+import spotipy
+from spotipy.oauth2 import SpotifyOAuth
+from textblob import TextBlob
+from google.genai.types import GenerateContentConfig
+from google import genai
 
-# --- App Config ---
-st.set_page_config(
-    page_title="Joke Master 3000 (Gemini)",
-    page_icon="🤖",
-    layout="wide"
+# Load environment variables
+load_dotenv()
+
+# API Keys & Config
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
+SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
+SPOTIFY_REDIRECT_URI = "http://localhost:8080"
+
+# --- Initialize Spotify Client ---
+def initialize_spotify():
+    """Authenticates and returns a Spotify client instance."""
+    try:
+        return spotipy.Spotify(auth_manager=SpotifyOAuth(
+            client_id=SPOTIFY_CLIENT_ID,
+            client_secret=SPOTIFY_CLIENT_SECRET,
+            redirect_uri=SPOTIFY_REDIRECT_URI,
+            scope="playlist-read-private"
+        ))
+    except Exception as e:
+        st.error(f"Spotify authentication failed: {e}")
+        return None
+
+sp = initialize_spotify()
+
+# --- Brightness Control ---
+def set_brightness(level: int) -> str:
+    """
+    Sets the system brightness level.
+
+    Args:
+        level (int): Brightness percentage (0-100).
+    """
+    try:
+        if not 0 <= level <= 100:
+            raise ValueError("Brightness must be between 0 and 100.")
+
+        backlight_path = "/sys/class/backlight/intel_backlight/"
+        if not os.path.exists(backlight_path):
+            backlight_path = "/sys/class/backlight/amdgpu_bl0/"
+
+        if not os.path.exists(backlight_path):
+            return "Could not find backlight control path."
+
+        with open(f"{backlight_path}max_brightness", "r") as f:
+            max_brightness = int(f.read().strip())
+
+        target_brightness = int((level / 100) * max_brightness)
+
+        cmd = f"echo {target_brightness} | sudo tee {backlight_path}brightness"
+        subprocess.run(cmd, shell=True, capture_output=True, text=True)
+
+        return f"Brightness set to {level}%"
+    except Exception as e:
+        return f"Error setting brightness: {str(e)}"
+
+# --- Volume Control ---
+def set_volume(level: int) -> str:
+    """
+    Sets the system volume.
+
+    Args:
+        level (int): Volume percentage (0-100).
+    """
+    os.system(f"pactl set-sink-volume @DEFAULT_SINK@ {level}%")
+    return f"Volume set to {level}%"
+
+# --- Mood Detection ---
+def detect_mood(text: str) -> str:
+    """
+    Analyzes text and determines mood.
+
+    Args:
+        text (str): Input text.
+
+    Returns:
+        str: Detected mood ('happy', 'sad', 'stressed', 'neutral', 'angry').
+    """
+    analysis = TextBlob(text)
+    polarity = analysis.sentiment.polarity
+    text_lower = text.lower()
+
+    if "angry" in text_lower or "mad" in text_lower:
+        return "angry"
+    elif "happy" in text_lower or "joy" in text_lower:
+        return "happy"
+    elif "sad" in text_lower or "depressed" in text_lower:
+        return "sad"
+    elif "stressed" in text_lower or "anxious" in text_lower:
+        return "stressed"
+
+    return "happy" if polarity > 0.3 else "sad" if polarity < -0.3 else "neutral"
+
+# --- Spotify Music Recommendation ---
+# MOOD_PLAYLISTS = {
+#     "happy": "spotify:playlist:37i9dQZF1DXdPec7aLTmlC",
+#     "sad": "spotify:playlist:37i9dQZF1DX64Y3ftTBfaN",
+#     "stressed": "spotify:playlist:37i9dQZF1DWU0ScTcjJBdj",
+#     "neutral": "spotify:playlist:37i9dQZF1DX0XUsuxWHRQd",
+#     "angry": "spotify:playlist:37i9dQZF1DX2DCrI7t4mmy"
+# }
+
+MOOD_PLAYLISTS = {
+    "happy": "37i9dQZF1DXdPec7aLTmlC",    # Just the ID portion
+    "sad": "37i9dQZF1DX64Y3ftTBfaN",
+    "stressed": "37i9dQZF1DWU0ScTcjJBdj",
+    "neutral": "37i9dQZF1DX0XUsuxWHRQd",
+    "angry": "37i9dQZF1DX2DCrI7t4mmy"
+}
+
+def recommend_music(mood: str) -> str:
+    if not sp:
+        return "Spotify integration not available."
+
+    playlist_id = MOOD_PLAYLISTS.get(mood, MOOD_PLAYLISTS["neutral"])
+    
+    try:
+        # First try with just the ID
+        try:
+            playlist = sp.playlist(playlist_id)
+            return f"Based on your mood, listen to: {playlist['name']} - {playlist['external_urls']['spotify']}"
+        except:
+            # If that fails, try with the full URI
+            playlist = sp.playlist(f"spotify:playlist:{playlist_id}")
+            return f"Based on your mood, listen to: {playlist['name']} - {playlist['external_urls']['spotify']}"
+    except Exception as e:
+        return f"Error fetching playlist: {str(e)}. Tried with ID: {playlist_id}"
+
+
+# --- Mood Detection Based on Chat History ---
+def detect_mood_from_history() -> str:
+    """
+    Analyzes the chat history and determines the user's overall mood.
+    
+    Returns:
+        str: Detected mood ('happy', 'sad', 'stressed', 'neutral', 'angry').
+    """
+    # Combine all previous messages in the chat history
+    chat_history = " ".join([message["content"] for message in st.session_state.messages if message["role"] == "user"])
+
+    # Detect the mood based on the combined chat history
+    return detect_mood(chat_history)
+
+# --- Mood Detection and Music Recommendation Integration ---
+def recommend_music_based_on_history() -> str:
+    """
+    Detects the mood from chat history and recommends music based on that mood.
+    
+    Returns:
+        str: A message with the recommended playlist link based on detected mood.
+    """
+    # Detect mood from chat history
+    detected_mood = detect_mood_from_history()
+    
+    # Recommend music based on detected mood
+    return recommend_music(detected_mood)
+
+
+# --- Integrating Gemini AI ---
+# Create Gemini Client
+client = genai.Client(api_key=GEMINI_API_KEY)
+
+# Define the Model
+model_id = "gemini-2.0-flash"
+
+# Generation Config
+config = GenerateContentConfig(
+    system_instruction="You are a helpful assistant that controls device settings and recommends music based on mood.",
+    tools=[set_brightness, set_volume, detect_mood, recommend_music],  # Define callable functions
 )
 
-# --- Session State ---
-if 'joke_history' not in st.session_state:
-    st.session_state.joke_history = []
+# --- Streamlit Chat UI ---
+st.title("💡 AI Assistant with Device Controls & Mood-Based Music")
 
-# --- Gemini Setup ---
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel("gemini-2.0-flash")
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-JOKE_API_URL = "https://v2.jokeapi.dev/joke/"
+# Display chat messages
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-def get_joke(category: str) -> str:
-    """
-    Fetches a joke from the API based on the selected category.
-    """
-    url = f"{JOKE_API_URL}{category}?type=twopart"
-    response = requests.get(url)
-    if response.status_code == 200:
-        data = response.json()
-        return f"{data['setup']} ... {data['delivery']}"
+# User Input
+user_input = st.chat_input("Ask me to adjust settings or recommend music!")
+
+if user_input:
+    # Add user input to chat
+    st.session_state.messages.append({"role": "user", "content": user_input})
+    with st.chat_message("user"):
+        st.markdown(user_input)
+
+    # Check if the user is asking for music
+    if 'music' in user_input.lower():
+        # Get the recommended music based on chat history's detected mood
+        ai_response = recommend_music_based_on_history()
     else:
-        return "Oops! Couldn't fetch a joke."
+        # Otherwise, process the request as normal
+        r = client.models.generate_content(
+            model=model_id,
+            config=config,
+            contents=user_input
+        )
+        ai_response = r.text
 
-def save_joke(joke: str, filename: str) -> None:
-    """Saves the joke to a text file."""
-    with open(filename, "w") as file:
-        file.write(joke)
-
-def tell_joke(filename: str) -> None:
-    """Reads the joke aloud using text-to-speech (TTS)."""
-    with open(filename, "r") as file:
-        joke = file.read()
-    tts = pyttsx3.init()
-    tts.say("Here is a joke for you!   ")
-    tts.say(joke)
-    tts.runAndWait()
-
-def recognize_speech():
-    """Listen to user voice input"""
-    r = sr.Recognizer()
-    with sr.Microphone() as source:
-        st.info("Speak now...")
-        audio = r.listen(source)
-        try:
-            text = r.recognize_google(audio)
-            return text
-        except Exception as e:
-            st.error(f"Couldn't understand: {e}")
-            return None
-
-# Configure Gemini to use functions
-tools = [get_joke, save_joke, tell_joke]
-
-def process_with_gemini(user_request: str):
-    response = model.generate_content(
-        contents=user_request
-    )
-    return response.text
-
-def main():
-    st.title("🎤 Joke Master 3000 (Gemini)")
-    st.markdown("### The AI-Powered Comedy Experience 🤖😂")
-
-    user_input = st.text_input("Ask me for a joke!", "Tell me a joke about programming")
-    
-    if st.button("🤣 Get Joke"):
-        response = process_with_gemini(user_input)
-        st.session_state.joke_history.append(response)
-        st.success(response)
-        save_joke(response, "joke.txt")
-        tell_joke("joke.txt")
-
-    if st.button("🎤 Use Voice Input"):
-        voice_text = recognize_speech()
-        if voice_text:
-            response = process_with_gemini(voice_text)
-            st.session_state.joke_history.append(response)
-            st.success(response)
-            save_joke(response, "joke.txt")
-            tell_joke("joke.txt")
-
-    with st.expander("📜 Joke History", expanded=False):
-        for joke in st.session_state.joke_history[-5:][::-1]:
-            st.write(joke)
-
-if __name__ == "__main__":
-    main()
+    # Add AI response to chat
+    st.session_state.messages.append({"role": "assistant", "content": ai_response})
+    with st.chat_message("assistant"):
+        st.markdown(ai_response)

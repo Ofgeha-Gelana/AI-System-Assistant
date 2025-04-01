@@ -274,7 +274,6 @@ def handle_command(prompt):
         elif "set" in prompt_lower:
             try:
                 parts = prompt_lower.split()
-
                 percentage = next((int(s.replace('%', '')) for s in parts if s.replace('%', '').isdigit()))
                 return set_brightness(percentage)
             except:
