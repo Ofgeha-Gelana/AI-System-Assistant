@@ -62,11 +62,3 @@ AI System Assistant is a smart AI-powered tool that helps manage system settings
 To send an SMS, the app makes a **POST request** to the SMS Gateway API.
 
 
-```
-
-
-
-
----
-
-🔹 **Developed with ❤️ by [Ofgeha]**
